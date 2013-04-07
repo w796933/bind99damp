@@ -210,7 +210,9 @@ dns_dampening_query(dns_dampening_t * damp, const isc_sockaddr_t * addr,
 			 impl->statistics.search.tv_sec, impl->statistics.search.tv_usec,
 			 impl->statistics.update.tv_sec, impl->statistics.update.tv_usec,
 			 impl->statistics.add.tv_sec, impl->statistics.add.tv_usec);
+	 unsigned int temp = impl->statistics.dampened;
 	 memset(&impl->statistics, 0, sizeof(impl->statistics));
+	 impl->statistics.dampened=temp;
 	 impl->statistics.last_report = now;
       }
       
