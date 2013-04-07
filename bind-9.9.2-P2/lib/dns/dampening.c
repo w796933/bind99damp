@@ -5,6 +5,7 @@
 #include <config.h>
 #include <math.h>
 #include <sys/time.h>
+#include <stdbool.h>
 
 /*
 #include <isc/buffer.h>
@@ -866,18 +867,25 @@ queue_add(void * data, const isc_netaddr_t * netaddr,
       update_penalty(d->conf, e, 0, now);
 
       if(e->penalty > points) {
-	 queue_update(d, &e, 0, now);
-	 return;
-      } else 
-	queue_delete(d, QUEUE_REAR(d));
+        queue_update(d, &e, 0, now);
+
+       if(isc_log_wouldlog(dns_lctx, ISC_LOG_INFO) && d)
+            isc_log_write(dns_lctx, DNS_LOGCATEGORY_DAMPENING, DNS_LOGMODULE_REQUEST, ISC_LOG_INFO, "Queue length: %u (full)", d->length);
+
+        return;
+      } else
+        queue_delete(d, QUEUE_REAR(d));
    }
+
+   if(isc_log_wouldlog(dns_lctx, ISC_LOG_INFO) && d)
+        isc_log_write(dns_lctx, DNS_LOGCATEGORY_DAMPENING, DNS_LOGMODULE_REQUEST, ISC_LOG_INFO, "Queue length: %u", d->length);
    
    INSIST(QUEUE_AVAIL(d) != 0);
    
    /* Allocate n */
    n = QUEUE_AVAIL(d);
    QUEUE_AVAIL(d) = d->field[n].list_next;
-   
+
    /* Link to hash */
    d->field[n].list_next = d->hash[h];
    d->hash[h] = n;
